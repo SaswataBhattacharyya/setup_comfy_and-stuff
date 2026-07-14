@@ -1,0 +1,37 @@
+# TTS-Audio-Suite overlay intent
+
+# The bootstrap clones latest upstream TTS-Audio-Suite first, then overlays this bundled local copy.
+
+# The local files that appear relevant to your timing/stitching additions include:
+
+# - `nodes/audio/scene_concat_node.py`
+# - `nodes/audio/scene_splitter_node.py`
+# - `nodes/audio/scene_edit_driver_node.py`
+# - `utils/audio/scene_concat.py`
+# - `utils/audio/timed_scene_concat.py`
+# - `utils/audio/scene_splitter.py`
+# - `utils/audio/scene_edit_driver.py`
+# - `utils/asr/srt_builder.py`
+# - `utils/asr/synthetic_timing.py`
+# - `utils/timing/`
+# - `docs/Dev reports/SRT_Edit_Tag_Batch_Processing_Pattern.md`
+# - `docs/Dev reports/SRT_IMPLEMENTATION.md`
+
+# Actual selected overlay paths used by bootstrap_dgx_comfy.sh:
+nodes.py
+nodes/audio/__init__.py
+nodes/audio/scene_concat_node.py
+nodes/audio/scene_splitter_node.py
+nodes/audio/scene_edit_driver_node.py
+utils/audio/__init__.py
+utils/audio/scene_concat.py
+utils/audio/timed_scene_concat.py
+utils/audio/scene_splitter.py
+utils/audio/scene_edit_driver.py
+utils/asr/srt_builder.py
+utils/asr/synthetic_timing.py
+utils/timing
+docs/Dev reports/SRT_Edit_Tag_Batch_Processing_Pattern.md
+docs/Dev reports/SRT_IMPLEMENTATION.md
+
+# Set `TTS_OVERLAY_MODE=full` before running bootstrap if the selected overlay misses registrations or support files.
