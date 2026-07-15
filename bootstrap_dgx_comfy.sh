@@ -106,9 +106,19 @@ resolve_python_runtime() {
     return
   fi
 
-  if [[ -n "${CONDA_PREFIX:-}" && -x "$CONDA_PREFIX/bin/python" ]]; then
-    COMFY_PYTHON="$CONDA_PREFIX/bin/python"
-    return
+  if [[ -n "${CONDA_PREFIX:-}" ]]; then
+    if [[ -x "$CONDA_PREFIX/bin/python" ]]; then
+      COMFY_PYTHON="$CONDA_PREFIX/bin/python"
+      return
+    fi
+    if [[ -x "$CONDA_PREFIX/bin/python3" ]]; then
+      COMFY_PYTHON="$CONDA_PREFIX/bin/python3"
+      return
+    fi
+    echo "[ERROR] Active conda env has no python executable under: $CONDA_PREFIX/bin" >&2
+    echo "Install Python into the env first, for example:" >&2
+    echo "  conda install -n $(basename "$CONDA_PREFIX") python pip" >&2
+    exit 1
   fi
 
   if [[ "$COMFY_CREATE_VENV" == "1" ]]; then
@@ -120,7 +130,7 @@ resolve_python_runtime() {
     return
   fi
 
-  echo "[ERROR] No active conda Python found." >&2
+  echo "[ERROR] No active conda env found." >&2
   echo "Activate your conda env first, then rerun:" >&2
   echo "  conda activate <your-env>" >&2
   echo "  ./bootstrap_dgx_comfy.sh" >&2

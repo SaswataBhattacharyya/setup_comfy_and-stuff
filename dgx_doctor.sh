@@ -68,8 +68,12 @@ except Exception as exc:
 PY
 echo
 
-if [[ -z "$COMFY_PYTHON" && -n "${CONDA_PREFIX:-}" && -x "$CONDA_PREFIX/bin/python" ]]; then
-  COMFY_PYTHON="$CONDA_PREFIX/bin/python"
+if [[ -z "$COMFY_PYTHON" && -n "${CONDA_PREFIX:-}" ]]; then
+  if [[ -x "$CONDA_PREFIX/bin/python" ]]; then
+    COMFY_PYTHON="$CONDA_PREFIX/bin/python"
+  elif [[ -x "$CONDA_PREFIX/bin/python3" ]]; then
+    COMFY_PYTHON="$CONDA_PREFIX/bin/python3"
+  fi
 fi
 
 if [[ -n "$COMFY_PYTHON" && -x "$COMFY_PYTHON" ]]; then
