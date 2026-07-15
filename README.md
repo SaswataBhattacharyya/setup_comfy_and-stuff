@@ -58,6 +58,14 @@ Tools -> Scripts -> Import Python Plugin from File
 
 Select the downloaded `krita_ai_diffusion-*.zip` from `downloads/`.
 
+The default Krita AI plugin version is `1.52.1`. The bootstrap checks out the matching upstream source tag and runs Krita AI's model downloader with:
+
+```bash
+--recommended --backend auto
+```
+
+Override with `KRITA_AI_VERSION`, `KRITA_AI_MODEL_ARGS`, or set `KRITA_AI_SKIP_MODEL_DOWNLOAD=1` if you need to skip the Krita model download.
+
 ## TTS-Audio-Suite
 
 The bootstrap clones the latest upstream TTS-Audio-Suite into ComfyUI custom nodes, runs upstream install if possible, then overlays the local bundled TTS files from `vendor/TTS-Audio-Suite-local`.

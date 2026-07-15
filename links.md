@@ -182,7 +182,7 @@ git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
 ## https://huggingface.co/Comfy-Org/ltx-2.3/resolve/main/split_files/loras/ltx-2.3-id-lora-talkvid-3k.safetensors
 
 ## krita_ai_plugin
-wget https://github.com/Acly/krita-ai-diffusion/releases/download/v1.46.1/krita_ai_diffusion-1.46.1.zip
+wget https://github.com/Acly/krita-ai-diffusion/releases/download/v1.52.1/krita_ai_diffusion-1.52.1.zip
 
 ## unet
 wget https://huggingface.co/QuantStack/Wan2.2-Animate-14B-GGUF/resolve/main/Wan2.2-Animate-14B-Q4_K_M.gguf

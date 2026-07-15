@@ -8,6 +8,9 @@ COMFYUI_PORT="${COMFYUI_PORT:-3008}"
 LINKS_FILE="${LINKS_FILE:-$ROOT_DIR/links.md}"
 COMFY_CREATE_VENV="${COMFY_CREATE_VENV:-0}"
 COMFY_PYTHON="${COMFY_PYTHON:-}"
+KRITA_AI_VERSION="${KRITA_AI_VERSION:-1.52.1}"
+KRITA_AI_MODEL_ARGS="${KRITA_AI_MODEL_ARGS:---recommended --backend auto}"
+KRITA_AI_SKIP_MODEL_DOWNLOAD="${KRITA_AI_SKIP_MODEL_DOWNLOAD:-0}"
 DOWNLOAD_DIR="$ROOT_DIR/downloads"
 LOG_DIR="$ROOT_DIR/logs"
 DEBIAN_FRONTEND=noninteractive
@@ -222,10 +225,22 @@ install_custom_node_repo() {
   target="$COMFYUI_DIR/custom_nodes/$name"
   if [[ -d "$target" ]]; then
     log "[INFO] Custom node exists: $name"
-    return
+    if [[ -d "$target/.git" ]]; then
+      if git -C "$target" diff --quiet && git -C "$target" diff --cached --quiet; then
+        log "[UPDATE] $name"
+        git -C "$target" pull --ff-only || {
+          log "[WARN] git pull failed for $name; continuing with existing checkout."
+        }
+      else
+        log "[WARN] Custom node has local changes; skipping update: $name"
+      fi
+    else
+      log "[WARN] Custom node is not a git checkout; skipping update: $name"
+    fi
+  else
+    log "[CLONE] $repo"
+    git clone "$repo" "$target"
   fi
-  log "[CLONE] $repo"
-  git clone "$repo" "$target"
   if [[ -f "$target/requirements.txt" ]]; then
     "$COMFY_PYTHON" -m pip install -r "$target/requirements.txt" || {
       log "[WARN] requirements install failed for $name; inspect ARM64 compatibility."
@@ -259,27 +274,42 @@ parse_links_manifest() {
 
 install_krita_ai_plugin_source() {
   local zip_path
-  zip_path="$(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -name 'krita_ai_diffusion-*.zip' | sort | tail -n 1 || true)"
-  if [[ -z "$zip_path" ]]; then
-    log "[WARN] Krita AI plugin zip not found in $DOWNLOAD_DIR. links.md should download it."
+  local plugin_root
+  local plugin_dir
+  local source_dir
+  local tmp_dir
+  zip_path="$DOWNLOAD_DIR/krita_ai_diffusion-${KRITA_AI_VERSION}.zip"
+  plugin_root="$ROOT_DIR/krita-ai-diffusion"
+  plugin_dir="$plugin_root/plugin-v${KRITA_AI_VERSION}"
+  source_dir="$plugin_root/source-v${KRITA_AI_VERSION}"
+
+  if [[ ! -f "$zip_path" ]]; then
+    log "[WARN] Krita AI plugin zip not found: $zip_path. links.md should download it."
     return
   fi
 
-  mkdir -p "$ROOT_DIR/krita-ai-diffusion"
-  if [[ ! -d "$ROOT_DIR/krita-ai-diffusion/ai_diffusion" ]]; then
-    local tmp_dir
+  mkdir -p "$plugin_root" "$plugin_dir"
+  if [[ ! -d "$plugin_dir/ai_diffusion" ]]; then
     tmp_dir="$(mktemp -d)"
     unzip -q "$zip_path" -d "$tmp_dir"
-    cp -a "$tmp_dir/ai_diffusion" "$ROOT_DIR/krita-ai-diffusion/"
-    cp -a "$tmp_dir/ai_diffusion.desktop" "$ROOT_DIR/krita-ai-diffusion/" 2>/dev/null || true
+    cp -a "$tmp_dir/ai_diffusion" "$plugin_dir/"
+    cp -a "$tmp_dir/ai_diffusion.desktop" "$plugin_dir/" 2>/dev/null || true
+    rm -rf "$tmp_dir"
   fi
 
-  if [[ ! -d "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion" ]]; then
-    git clone https://github.com/Acly/krita-ai-diffusion.git "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion"
+  if [[ ! -d "$source_dir/.git" ]]; then
+    git clone --branch "v${KRITA_AI_VERSION}" --depth 1 https://github.com/Acly/krita-ai-diffusion.git "$source_dir"
+  else
+    git -C "$source_dir" fetch --depth 1 origin "v${KRITA_AI_VERSION}" || {
+      log "[WARN] Could not fetch Krita AI tag v${KRITA_AI_VERSION}; using existing source checkout."
+    }
+    git -C "$source_dir" checkout -q "v${KRITA_AI_VERSION}" || {
+      log "[WARN] Could not checkout Krita AI tag v${KRITA_AI_VERSION}; using existing source checkout."
+    }
   fi
 
-  if [[ -f "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion/requirements.txt" ]]; then
-    "$COMFY_PYTHON" -m pip install -r "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion/requirements.txt" || {
+  if [[ -f "$source_dir/requirements.txt" ]]; then
+    "$COMFY_PYTHON" -m pip install -r "$source_dir/requirements.txt" || {
       log "[WARN] Krita AI requirements failed; inspect ARM64 compatibility."
     }
   fi
@@ -288,8 +318,14 @@ install_krita_ai_plugin_source() {
     log "[WARN] One or more Krita/Comfy extra Python packages failed; inspect ARM64 compatibility."
   }
 
-  if [[ -d "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion/scripts" ]]; then
-    cp -a "$ROOT_DIR/krita-ai-diffusion/krita-ai-diffusion/scripts" "$ROOT_DIR/krita-ai-diffusion/"
+  if [[ "$KRITA_AI_SKIP_MODEL_DOWNLOAD" == "1" ]]; then
+    log "[INFO] Skipping Krita AI model download because KRITA_AI_SKIP_MODEL_DOWNLOAD=1."
+  elif [[ -f "$source_dir/scripts/download_models.py" ]]; then
+    log "[DOWNLOAD] Krita AI models: $KRITA_AI_MODEL_ARGS"
+    # shellcheck disable=SC2086
+    "$COMFY_PYTHON" "$source_dir/scripts/download_models.py" "$COMFYUI_DIR" $KRITA_AI_MODEL_ARGS
+  else
+    log "[WARN] Krita AI download_models.py not found in $source_dir/scripts."
   fi
 }
 
