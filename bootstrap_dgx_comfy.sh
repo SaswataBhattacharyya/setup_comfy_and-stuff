@@ -63,6 +63,8 @@ ensure_base_packages() {
     libxrender1 \
     lsof \
     nano \
+    nodejs \
+    npm \
     pciutils \
     portaudio19-dev \
     psmisc \

@@ -23,6 +23,8 @@ conda activate <your-comfy-env>
 
 The bootstrap will run the doctor again and save `dgx_doctor_output.txt`.
 
+The bootstrap installs required system tools with `apt`, including `ffmpeg`, `git`, `curl`, `wget`, `unzip`, `nodejs`, and `npm`.
+
 The bootstrap installs Python packages into the active conda environment. It does not create `ComfyUI/venv` unless you explicitly set:
 
 ```bash
@@ -50,7 +52,7 @@ This installer is ARM64-specific and does not guess PyTorch CUDA wheels. If `tor
 
 ## Krita AI
 
-The bootstrap downloads the Krita AI Diffusion plugin zip and prepares plugin source/requirements. It does not force-install the Krita app itself. Install/import the plugin manually in Krita:
+The bootstrap downloads the Krita AI Diffusion plugin zip and prepares plugin source/requirements. It does not force-install the Krita app itself. Install Krita system-wide, for example with `apt`, then import the plugin manually in Krita:
 
 ```text
 Tools -> Scripts -> Import Python Plugin from File
@@ -65,6 +67,8 @@ The default Krita AI plugin version is `1.52.1`. The bootstrap checks out the ma
 ```
 
 Override with `KRITA_AI_VERSION`, `KRITA_AI_MODEL_ARGS`, or set `KRITA_AI_SKIP_MODEL_DOWNLOAD=1` if you need to skip the Krita model download.
+
+Keep the ComfyUI Python environment isolated. Do not copy Python packages from another conda env such as `base` into the active Comfy env; the bootstrap installs ComfyUI, Krita AI, and custom-node Python requirements into the selected `COMFY_PYTHON` runtime. Large model downloads are skipped when the target file already exists.
 
 ## TTS-Audio-Suite
 
