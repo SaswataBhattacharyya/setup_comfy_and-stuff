@@ -1,0 +1,120 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "lsp": true,
+  "instructions": ["AGENTS.md"],
+  "formatter": true,
+  "permission": {
+    "read": "allow",
+    "grep": "allow",
+    "glob": "allow",
+    "lsp": "allow",
+    "todowrite": "allow",
+    "skill": {
+      "*": "allow"
+    },
+    "task": {
+      "*": "ask",
+      "frontend": "allow",
+      "debugger": "allow",
+      "tester": "allow",
+      "reviewer": "allow",
+      "quality-gate": "allow",
+      "refactorer": "allow",
+      "browser": "ask",
+      "figma": "ask",
+      "animation": "ask",
+      "security": "ask",
+      "graph-navigator": "allow",
+      "icons-svg": "allow",
+      "excalidraw": "ask",
+      "blender": "ask",
+      "t2ima": "allow",
+      "ima2ima": "allow",
+      "ima2vid": "allow"
+    },
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "ls*": "allow",
+      "find*": "allow",
+      "grep*": "allow",
+      "cat*": "allow",
+      "npm run test*": "allow",
+      "npm test*": "allow",
+      "npm run lint*": "allow",
+      "npm run build*": "allow",
+      "npx tsc*": "allow",
+      "bun run test*": "allow",
+      "bun test*": "allow",
+      "bun run lint*": "allow",
+      "bun run build*": "allow",
+      "npm install*": "ask",
+      "bun install*": "ask",
+      "rm *": "ask",
+      "rm -rf*": "ask",
+      "sudo*": "deny",
+      "chmod -R*": "deny"
+    },
+    "webfetch": "allow",
+    "websearch": "ask"
+  },
+  "plugin": [
+    ".opencode/plugins/graphify.js"
+  ],
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "enabled": true
+    },
+    "figma": {
+      "type": "remote",
+      "url": "https://mcp.figma.com/mcp",
+      "enabled": true
+    },
+    "figma-desktop": {
+      "type": "remote",
+      "url": "http://127.0.0.1:3845/mcp",
+      "enabled": false
+    },
+    "animotion": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "animotion-mcp"
+      ],
+      "enabled": true
+    },
+    "excalidraw": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@cmd8/excalidraw-mcp"
+      ],
+      "enabled": false
+    },
+    "blender-mcp": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "blender-mcp"
+      ],
+      "enabled": false,
+      "environment": {
+        "BLENDER_HOST": "localhost",
+        "BLENDER_PORT": "9876",
+        "DISABLE_TELEMETRY": "true"
+      }
+    }
+  }
+}
