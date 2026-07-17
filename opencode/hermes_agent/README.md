@@ -6,7 +6,7 @@ This folder is the Hermes instruction pack for Agentic Art Bare Minimum.
 
 - This folder is a markdown instruction pack, not a complete Hermes runtime by itself.
 - The existing repo scripts remain the supported setup path on ARM64 NVIDIA DGX Spark.
-- Hermes should use local Ollama/Qwen models first: reasoning, coder, and vision.
+- Hermes should use one local Ollama/Qwen model first for reasoning, coding, and vision.
 - GLM-5.2 is optional and paid, so it must be routed through a cost gate.
 - The existing top-level `hermes/*.md` files are still the active backend instruction source unless the backend loader or sync step is changed.
 - Every repo should have its own repo-specific Hermes guide layered on top of the common Hermes guides.
@@ -68,13 +68,12 @@ The current backend runtime reads the existing top-level `hermes/*.md` files fro
 
 ## Runtime Position
 
-Hermes is the orchestrator. It should route tasks to bounded specialist roles, keep visible logs, preserve context between models, and prefer the local Qwen stack before any paid model.
+Hermes is the orchestrator. It should route tasks to bounded specialist roles, keep visible logs, preserve context between roles, and prefer the local Qwen stack before any paid model.
 
-Default local model roles:
+Default local model:
 
-- reasoning/language: `HERMES_AGENT_MODEL` or `OLLAMA_REASONING_MODEL`
-- coding: `HERMES_AGENT_CODER_MODEL` or `OLLAMA_CODER_MODEL`
-- vision/image review: `HERMES_AGENT_VISION_MODEL` or `OLLAMA_VISION_MODEL`
+- reasoning/language/coding/vision: `HERMES_AGENT_MODEL` or `OLLAMA_REASONING_MODEL`
+- compatibility aliases: `HERMES_AGENT_CODER_MODEL`, `OLLAMA_CODER_MODEL`, `HERMES_AGENT_VISION_MODEL`, `OLLAMA_VISION_MODEL`
 
 Optional paid route:
 
@@ -89,7 +88,7 @@ Optional paid route:
 Run these commands from the repo root:
 
 ```bash
-cd /home/saswata/web_dev/website_design/Agentic_art_bare_min
+cd /home/saswata/web_dev/website_design/comfy_setup
 ```
 
 First-time full setup:
@@ -110,7 +109,7 @@ Self-contained setup for this Hermes pack, including syncing these docs into Her
 ./opencode/hermes_agent/install_and_start_hermes_cli.sh
 ```
 
-The standalone script can install Ollama if missing, start Ollama, prompt for reasoning/coder/vision model choices, pull the selected models, install Hermes CLI, configure Hermes for local Qwen via Ollama, sync this pack into Hermes memory, and start the CLI.
+The standalone script can install Ollama if missing, start Ollama, prompt for one unified local model, pull that model once, install Hermes CLI, configure Hermes for local Qwen via Ollama, sync this pack into Hermes memory, and start the CLI.
 
 Normal startup after setup:
 
@@ -175,16 +174,16 @@ hermes config set model.api_key ollama
 hermes config set model.api_mode chat_completions
 ```
 
-Set the default model to the repo-selected reasoning model, for example:
+Set the default model to the repo-selected unified model:
 
 ```bash
-hermes config set model.default qwen3.6:27b
+hermes config set model.default qwen3.6:35b
 ```
 
 Start Hermes CLI from the repo root and tell it to load this pack:
 
 ```bash
-cd /home/saswata/web_dev/website_design/Agentic_art_bare_min
+cd /home/saswata/web_dev/website_design/comfy_setup
 ```
 
 ```bash
@@ -206,12 +205,12 @@ HERMES_START_CLI=0 ./opencode/hermes_agent/install_and_start_hermes_cli.sh
 Initial Hermes instruction for this repo:
 
 ```text
-Read opencode/hermes_agent/README.md first. Then read the COMMON_*.md files, commands/*.md, tools/*.md, state/README.md, plugins/*.md, mcp/README.md, and the REPO_AGENTIC_ART_*.md files in the documented load order. Treat those as your Hermes orchestration guide for this repository. Use local Qwen models first, keep project logs visible, and follow the Agentic Art repo-specific flow.
+Read opencode/hermes_agent/README.md first. Then read the COMMON_*.md files, commands/*.md, tools/*.md, state/README.md, plugins/*.md, mcp/README.md, and the REPO_AGENTIC_ART_*.md files in the documented load order. Treat those as your Hermes orchestration guide for this repository. Use the local Qwen model first, keep project logs visible, and follow the Agentic Art repo-specific flow.
 ```
 
 ## GLM-5.2 Permission Rule
 
-Hermes must use local Qwen models by default. GLM-5.2 is only for huge-context or project-wide reasoning.
+Hermes must use the local Qwen model by default. GLM-5.2 is only for huge-context or project-wide reasoning.
 
 Before the first GLM-5.2 use in a CLI session, Hermes must ask for permission:
 

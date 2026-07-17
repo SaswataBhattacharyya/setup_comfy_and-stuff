@@ -1,6 +1,6 @@
 # Common Context Protocol
 
-Hermes must move context between models without losing critical facts or wasting tokens.
+Hermes must move context between roles without losing critical facts or wasting tokens. Local reasoning, coding, and vision work use the same configured Qwen model by default.
 
 ## Context Pack Shape
 
@@ -17,16 +17,16 @@ Every handoff should include:
 
 Use structured JSON when the receiver is a programmatic model call. Use compact markdown when the receiver is a human or CLI agent.
 
-## Model Handoff Rules
+## Role Handoff Rules
 
-- Reasoning model receives product intent, repo summaries, artifact summaries, and decisions.
-- Coder model receives exact files, stack traces, symbols, APIs, tests, and diff constraints.
-- Vision model receives images/screenshots plus concise visual criteria and relevant artifact context.
+- Reasoning role receives product intent, repo summaries, artifact summaries, and decisions.
+- Coder role receives exact files, stack traces, symbols, APIs, tests, and diff constraints.
+- Vision role receives images/screenshots plus concise visual criteria and relevant artifact context.
 - Paid huge-context model receives only after local context gathering and compression.
 
 ## Ping-Pong Control
 
-When a task moves from one model to another:
+When a task moves from one role or execution phase to another:
 
 1. Hermes writes a transition summary.
 2. The receiver returns findings plus confidence and missing context.
@@ -43,7 +43,7 @@ Before sending long context:
 - include file outlines before full files
 - include call chains and symbols instead of entire directories
 - include diffs instead of whole changed files when reviewing edits
-- summarize prior model responses into decisions and evidence
+- summarize prior role responses into decisions and evidence
 - keep raw error bodies intact when they are diagnostic
 
 ## Required Handoff Footer

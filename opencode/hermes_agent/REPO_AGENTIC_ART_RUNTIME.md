@@ -25,17 +25,17 @@
 
 ## Model Environment
 
-Reasoning:
+Unified local model:
 
 - `OLLAMA_REASONING_MODEL`
 - `HERMES_AGENT_MODEL`
 
-Coding:
+Compatibility coding aliases:
 
 - `OLLAMA_CODER_MODEL`
 - `HERMES_AGENT_CODER_MODEL`
 
-Vision:
+Compatibility vision aliases:
 
 - `OLLAMA_VISION_MODEL`
 - `HERMES_AGENT_VISION_MODEL`
@@ -52,9 +52,7 @@ Timeouts:
 
 ## Current Expected Local Stack
 
-- reasoning: `qwen3.6:27b`
-- coding: `qwen3-coder:30b`
-- vision: `qwen3-vl:30b`
+- reasoning/coding/vision: `qwen3.6:35b`
 
 Inspect `config/hermes_agent.local.env` before assuming actual local values.
 

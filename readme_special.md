@@ -16,7 +16,7 @@ Important caveats:
 
 - It installs Ollama from `https://ollama.com/install.sh`. Ollama supports Linux ARM64, so this part is expected to work on DGX Spark.
 - It installs Hermes from live network install scripts. This is the riskiest part because it depends on the Hermes installer publishing an ARM64-compatible Linux binary or install path.
-- It pulls model names like `qwen3.6:27b`, `qwen3-coder:30b`, and `qwen3-vl:30b`. If Ollama does not know one of those exact tags, the script will fail at `ollama pull`. In that case, choose installed/available Ollama tags manually through `config/hermes_agent.local.env`.
+- It now uses one model by default: `qwen3.6:35b`. The old coder and vision environment variable names are kept as aliases to the same model, so the script should not pull `qwen3-coder:30b` or `qwen3-vl:30b`.
 - It starts Ollama on `127.0.0.1:11434`, which is local-only.
 - It does not expose Hermes or Ollama on public network ports.
 - It configures Hermes to use the local Ollama OpenAI-compatible endpoint: `http://127.0.0.1:11434/v1`.
@@ -44,6 +44,42 @@ cd /home/saswata/web_dev/website_design/comfy_setup
 hermes
 ```
 
+## One-Model Hermes Setup
+
+Use `qwen3.6:35b` as the single local model for reasoning, coding, and vision/image review.
+
+The compatibility variables should all point to the same model:
+
+```bash
+OLLAMA_REASONING_MODEL=qwen3.6:35b
+OLLAMA_CODER_MODEL=qwen3.6:35b
+OLLAMA_VISION_MODEL=qwen3.6:35b
+HERMES_AGENT_MODEL=qwen3.6:35b
+HERMES_AGENT_CODER_MODEL=qwen3.6:35b
+HERMES_AGENT_VISION_MODEL=qwen3.6:35b
+HERMES_AGENT_BASE_URL=http://127.0.0.1:11434/v1
+```
+
+Hermes setup/config choices:
+
+```text
+provider: custom / OpenAI-compatible
+base URL: http://127.0.0.1:11434/v1
+API key: ollama
+API mode: chat_completions
+default model: qwen3.6:35b
+```
+
+Equivalent commands:
+
+```bash
+hermes config set model.provider custom
+hermes config set model.base_url http://127.0.0.1:11434/v1
+hermes config set model.api_key ollama
+hermes config set model.api_mode chat_completions
+hermes config set model.default qwen3.6:35b
+```
+
 ## Local Port Map
 
 Use loopback addresses unless you intentionally want LAN access.
@@ -65,7 +101,7 @@ If using an activated conda env:
 
 ```bash
 cd /home/saswata/web_dev/website_design/comfy_setup
-conda activate <your-comfy-env>
+conda activate react
 cd ComfyUI
 python main.py --listen 127.0.0.1 --port 3008
 ```
@@ -194,7 +230,7 @@ hermes config set model.provider custom
 hermes config set model.base_url http://127.0.0.1:11434/v1
 hermes config set model.api_key ollama
 hermes config set model.api_mode chat_completions
-hermes config set model.default <your-local-ollama-model>
+hermes config set model.default qwen3.6:35b
 ```
 
 The bundled Hermes script writes:
@@ -210,12 +246,12 @@ Example override before running the script:
 ```bash
 mkdir -p config
 cat > config/hermes_agent.local.env <<'EOF'
-OLLAMA_REASONING_MODEL=qwen2.5-coder:14b
-OLLAMA_CODER_MODEL=qwen2.5-coder:14b
-OLLAMA_VISION_MODEL=qwen2.5vl:7b
-HERMES_AGENT_MODEL=qwen2.5-coder:14b
-HERMES_AGENT_CODER_MODEL=qwen2.5-coder:14b
-HERMES_AGENT_VISION_MODEL=qwen2.5vl:7b
+OLLAMA_REASONING_MODEL=qwen3.6:35b
+OLLAMA_CODER_MODEL=qwen3.6:35b
+OLLAMA_VISION_MODEL=qwen3.6:35b
+HERMES_AGENT_MODEL=qwen3.6:35b
+HERMES_AGENT_CODER_MODEL=qwen3.6:35b
+HERMES_AGENT_VISION_MODEL=qwen3.6:35b
 HERMES_AGENT_BASE_URL=http://127.0.0.1:11434/v1
 EOF
 ```
@@ -253,6 +289,47 @@ So Figma cloud is not local. Figma Desktop MCP on `127.0.0.1:3845` would be loca
 
 GitHub access is outbound HTTPS or SSH. It does not expose your DGX unless you run a server or create a tunnel.
 
+## No-Reinstall Startup Scripts
+
+These scripts do not install packages, create venvs, pull models, or edit conda environments. They activate the `react` conda env first and then start local services.
+
+Start only ComfyUI:
+
+```bash
+cd /home/saswata/web_dev/website_design/comfy_setup
+./opencode/hermes_agent/start_comfyui_local.sh
+```
+
+Start only ComfyUI in the background:
+
+```bash
+cd /home/saswata/web_dev/website_design/comfy_setup
+COMFY_BACKGROUND=1 ./opencode/hermes_agent/start_comfyui_local.sh
+```
+
+Start Ollama, ComfyUI, and Hermes:
+
+```bash
+cd /home/saswata/web_dev/website_design/comfy_setup
+./opencode/hermes_agent/start_local_ai_stack.sh
+```
+
+If Hermes is installed inside a venv and not on `PATH`, pass the exact executable:
+
+```bash
+HERMES_CMD=/path/to/hermes ./opencode/hermes_agent/start_local_ai_stack.sh
+```
+
+Logs:
+
+```text
+logs/ollama.log
+logs/comfyui.log
+logs/hermes.log
+```
+
+The full-stack script activates `react` before starting anything. Hermes may still internally run from its installer-managed venv if `HERMES_CMD` points there. That is acceptable because Hermes talks to Ollama over HTTP and does not need to import ComfyUI's CUDA/Torch packages. Do not merge the Hermes venv into the ComfyUI conda env unless Hermes itself proves it cannot run otherwise.
+
 ## Recommended Startup Order
 
 Terminal 1, start Ollama:
@@ -265,7 +342,7 @@ Terminal 2, start ComfyUI:
 
 ```bash
 cd /home/saswata/web_dev/website_design/comfy_setup
-conda activate <your-comfy-env>
+conda activate react
 cd ComfyUI
 python main.py --listen 127.0.0.1 --port 3008
 ```
@@ -343,7 +420,7 @@ If Ollama model pull fails:
 
 - Run `ollama list`.
 - Use a known installed model in `config/hermes_agent.local.env`.
-- Re-run the Hermes script with `HERMES_PULL_MODELS=0` if models are already installed or you want to pull manually.
+- Re-run the Hermes script with `HERMES_PULL_MODELS=0` if `qwen3.6:35b` is already installed or you want to pull manually.
 
 ```bash
 HERMES_PULL_MODELS=0 HERMES_START_CLI=0 ./opencode/hermes_agent/install_and_start_hermes_cli.sh

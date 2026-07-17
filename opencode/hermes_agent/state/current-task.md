@@ -6,7 +6,7 @@ No active task.
 ## Constraints
 - Preserve existing working behavior.
 - Follow repo-specific Hermes guides after common guides.
-- Use local Qwen models by default.
+- Use the unified local Qwen model by default.
 - Ask before paid GLM-5.2 use.
 
 ## Files touched

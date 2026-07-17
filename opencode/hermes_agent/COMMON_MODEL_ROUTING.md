@@ -1,13 +1,15 @@
 # Common Model Routing
 
-Hermes uses local models by default and paid GLM-5.2 only for justified huge-context work.
+Hermes uses one local Qwen model by default and paid GLM-5.2 only for justified huge-context work.
 
-## Local Reasoning Model
+## Unified Local Model
 
 Environment:
 
 - `HERMES_AGENT_MODEL`
 - fallback: `OLLAMA_REASONING_MODEL`
+- compatibility coding aliases: `HERMES_AGENT_CODER_MODEL`, `OLLAMA_CODER_MODEL`
+- compatibility vision aliases: `HERMES_AGENT_VISION_MODEL`, `OLLAMA_VISION_MODEL`
 
 Use for:
 
@@ -17,18 +19,6 @@ Use for:
 - general web/search synthesis
 - failure diagnosis when code edits are not the main task
 - deciding whether a specialist is needed
-
-Default in this repo is expected to be `qwen3.6:27b` unless local config says otherwise.
-
-## Local Coder Model
-
-Environment:
-
-- `HERMES_AGENT_CODER_MODEL`
-- fallback: `OLLAMA_CODER_MODEL`
-
-Use for:
-
 - codebase questions
 - stack traces
 - implementation plans
@@ -36,29 +26,17 @@ Use for:
 - tests
 - refactors
 - multi-file code diagnosis
-
-Default in this repo is expected to be `qwen3-coder:30b` unless local config says otherwise.
-
-## Local Vision Model
-
-Environment:
-
-- `HERMES_AGENT_VISION_MODEL`
-- fallback: `OLLAMA_VISION_MODEL`
-
-Use for:
-
 - image inputs
 - generated candidate review
 - screenshot inspection
 - visual regression checks
 - UI layout inspection when pixels matter
 
-Default in this repo is expected to be `qwen3-vl:30b` unless local config says otherwise.
+Default in this repo is expected to be `qwen3.6:35b` unless local config says otherwise. The coder and vision environment names are retained only as compatibility aliases and should point to the same model.
 
 ## Web/Search Tasks
 
-Use the reasoning model to synthesize search results. Use web/search tools only when current facts are needed, the user asks for latest information, or source attribution matters.
+Use the unified local model to synthesize search results. Use web/search tools only when current facts are needed, the user asks for latest information, or source attribution matters.
 
 ## GLM-5.2 Optional Route
 
@@ -80,6 +58,5 @@ Poor GLM-5.2 tasks:
 
 - simple code edits
 - small bugs with stack traces
-- image review
 - routine artifact generation
 - summarizing a single file

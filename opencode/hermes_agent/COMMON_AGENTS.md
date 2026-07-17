@@ -26,7 +26,7 @@ Use for:
 - initial task understanding
 - deciding whether work is simple enough to do directly
 - splitting multi-domain work into ordered subtasks
-- model routing between reasoning, coder, vision, and optional GLM-5.2
+- role routing between reasoning, coding, vision review, and optional GLM-5.2
 - keeping logs and task state coherent
 
 Workflow:
@@ -44,7 +44,7 @@ Rules:
 - Do not delegate just to create activity.
 - Do not let multiple agents edit the same files without a merge point.
 - Repo-specific guides override common guides.
-- Local Qwen models are default; GLM-5.2 requires the cost gate.
+- One local Qwen model is default for reasoning, coding, and vision; GLM-5.2 requires the cost gate.
 
 ## graph-navigator
 
