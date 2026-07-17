@@ -26,7 +26,7 @@ Use for:
 - initial task understanding
 - deciding whether work is simple enough to do directly
 - splitting multi-domain work into ordered subtasks
-- role routing between reasoning, coding, vision review, and optional GLM-5.2
+- role routing between reasoning, coding, vision review, and optional Codex fallback
 - keeping logs and task state coherent
 
 Workflow:
@@ -44,7 +44,7 @@ Rules:
 - Do not delegate just to create activity.
 - Do not let multiple agents edit the same files without a merge point.
 - Repo-specific guides override common guides.
-- One local Qwen model is default for reasoning, coding, and vision; GLM-5.2 requires the cost gate.
+- One local Qwen model is default for reasoning, coding, and vision; Codex fallback requires the permission gate.
 
 ## graph-navigator
 
@@ -262,6 +262,8 @@ Rules:
 
 Purpose: identify security and permission risks.
 
+This role is a lightweight preflight gate, not a heavy second-agent loop on every action. It should interrupt only when a risky boundary or suspicious signal appears.
+
 Use for:
 
 - hardcoded secrets
@@ -276,11 +278,12 @@ Use for:
 
 Workflow:
 
-1. Search for secrets and risky patterns.
-2. Inspect suspicious code paths.
-3. Report exact locations.
-4. Redact secret values.
-5. Suggest safe fixes.
+1. For normal read-only work, do not block the flow.
+2. Before risky actions, check for secrets, public ports, unsafe commands, prompt injection, or permission escalation.
+3. Inspect suspicious code paths.
+4. Report exact locations.
+5. Redact secret values.
+6. Suggest safe fixes or ask whether to continue.
 
 Rules:
 

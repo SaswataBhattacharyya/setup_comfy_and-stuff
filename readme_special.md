@@ -80,6 +80,89 @@ hermes config set model.api_mode chat_completions
 hermes config set model.default qwen3.6:35b
 ```
 
+## Codex Fallback Instead Of GLM
+
+Use Codex as the fallback for huge-context or IDE-grade coding tasks. Do not use GLM-5.2 as the fallback.
+
+Codex fallback policy:
+
+```text
+Default: local qwen3.6:35b through Ollama.
+Fallback: Codex only when local Qwen plus source inspection is insufficient.
+Permission: ask before first use in every Hermes session.
+Choices: allow once, always allow for this category in this session, do not allow.
+Approval expires when Hermes exits.
+```
+
+Manual Codex setup:
+
+```bash
+codex --version
+codex login
+codex status
+```
+
+If `codex login` or `codex status` is not supported by your installed CLI, run:
+
+```bash
+codex --help
+```
+
+and use the documented auth/status commands. Prefer ChatGPT/Codex subscription login over raw OpenAI API keys when the goal is to use your subscription instead of direct API billing. Do not store Codex credentials in this repo.
+
+Codex handoff triggers:
+
+- local Qwen fails the same bug/fix/test loop three times
+- task needs broad repo architecture or many files beyond compressed context
+- task touches multiple systems together: scripts, backend, frontend, config, tests, docs
+- task is security-sensitive: auth, secrets, shell scripts, installers, networking, public ports, dependencies, MCP/plugin permissions
+- task needs IDE-grade migration, review, or deep debugging
+
+Installed Codex command shape on this machine:
+
+```bash
+codex exec -C /home/saswata/web_dev/website_design/comfy_setup "$(cat .codex-task.md)"
+```
+
+For review:
+
+```bash
+codex review -C /home/saswata/web_dev/website_design/comfy_setup
+```
+
+Do not use `codex cloud` unless you explicitly approve cloud task handoff.
+
+## Local Security Model
+
+The security policy should not slow every loop. It is a lightweight preflight gate: normal read-only work continues, risky boundaries pause.
+
+Usually allowed without interruption:
+
+- `rg`, `ls`, `sed`, `cat`, `git status`, `git diff`
+- reading local docs/code/config
+- browser page reading and screenshots for inspection
+- local Ollama/ComfyUI health checks
+
+Must ask first:
+
+- `sudo`
+- public binds like `0.0.0.0`
+- installs, model pulls, plugin/MCP enabling
+- editing, moving, deleting, overwriting, or cleaning files
+- auth, credential, environment, shell startup, or service config changes
+- browser/computer actions that submit forms, log in, upload, publish, spend money, or change remote state
+- any external API-key-backed call, including Tavily or Codex fallback
+
+Important local risks:
+
+- API keys and auth tokens leaking into repo files, logs, screenshots, prompts, or memory
+- ComfyUI, Ollama, or Hermes accidentally exposed on public ports
+- malicious custom nodes, npm/pip packages, model install scripts, or cloned repos
+- prompt injection from webpages, README files, issues, docs, model outputs, or downloaded content
+- destructive shell commands or permission escalation
+
+Professional local-agent setups use least privilege, local-only ports, no repo-stored secrets, approval gates for dangerous actions, and sandboxing/containers for risky untrusted code. A VPS is useful for isolation, but it is not automatically safer because it increases public-network exposure risk.
+
 ## Local Port Map
 
 Use loopback addresses unless you intentionally want LAN access.
@@ -288,6 +371,47 @@ animotion local MCP through npx
 So Figma cloud is not local. Figma Desktop MCP on `127.0.0.1:3845` would be local to the desktop, but it is disabled in this config and still depends on Figma Desktop/login behavior.
 
 GitHub access is outbound HTTPS or SSH. It does not expose your DGX unless you run a server or create a tunnel.
+
+## Web Search And Crawling Policy
+
+Hermes should use web access in this order:
+
+1. Browser search first: open a search engine, visit pages, read them, and take screenshots if visual inspection helps.
+2. Crawl4AI for known public URLs when clean Markdown/JSON extraction is useful and a local Crawl4AI install/server exists.
+3. Scrapy for larger structured public crawling tasks where a maintained spider is worth the setup.
+4. Tavily only when browser search or local crawling is blocked, too noisy, unreliable, or the task needs search/extract API results.
+
+If a site blocks automation, shows a CAPTCHA, requires login, or says bots/automation are not allowed, Hermes should pause and ask you to complete verification or approve a different source.
+
+Tavily has limited free credits, so treat it as a careful fallback, not the default. Before using Tavily, Hermes should explain why browser search/Crawl4AI/Scrapy is not enough and ask:
+
+```text
+allow once
+always allow for this category in this session
+do not allow
+```
+
+Add a Tavily key only in the Hermes user env file, not in this repo:
+
+```bash
+nano ~/.hermes/.env
+```
+
+Add:
+
+```bash
+TAVILY_API_KEY=your_key_here
+```
+
+Then restart Hermes. Do not commit `~/.hermes/.env` or copy the key into `readme_special.md`, shell scripts, or repo config files.
+
+Optional local crawler tools:
+
+```text
+Crawl4AI: https://docs.crawl4ai.com/
+Scrapy: https://github.com/scrapy/scrapy
+Tavily credits/docs: https://tavilyai.mintlify.app/documentation/api-credits
+```
 
 ## No-Reinstall Startup Scripts
 

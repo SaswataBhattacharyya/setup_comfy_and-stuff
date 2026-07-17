@@ -22,7 +22,7 @@ Use structured JSON when the receiver is a programmatic model call. Use compact 
 - Reasoning role receives product intent, repo summaries, artifact summaries, and decisions.
 - Coder role receives exact files, stack traces, symbols, APIs, tests, and diff constraints.
 - Vision role receives images/screenshots plus concise visual criteria and relevant artifact context.
-- Paid huge-context model receives only after local context gathering and compression.
+- Codex fallback receives only after local context gathering, secret redaction, and compression.
 
 ## Ping-Pong Control
 

@@ -7,7 +7,7 @@ No active task.
 - Preserve existing working behavior.
 - Follow repo-specific Hermes guides after common guides.
 - Use the unified local Qwen model by default.
-- Ask before paid GLM-5.2 use.
+- Ask before Codex fallback use.
 
 ## Files touched
 None.

@@ -4,8 +4,8 @@ OpenCode used a plugin to remind the agent about Graphify before bash calls. Her
 
 Before broad repository searches or architecture work:
 
-1. Check whether `graphify-out/graph.json` exists.
-2. Check whether the graph belongs to the current repo.
+1. Check whether a current Graphify graph exists for this repo.
+2. Check whether the graph belongs to this exact repo and current code state.
 3. If current, prefer:
 
 ```bash
@@ -20,6 +20,6 @@ graphify path "<A>" "<B>"
 graphify explain "<concept>"
 ```
 
-4. If the graph is stale or belongs to another repo, say so and use source inspection.
+4. If no current graph exists, say so and use source inspection.
 
-For Agentic Art, the bundled `opencode/graphify-out` was generated for another repo, so it must not be used as truth until regenerated.
+Do not rely on copied, bundled, or stale Graphify output.

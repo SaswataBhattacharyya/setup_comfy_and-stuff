@@ -7,7 +7,7 @@ This folder is the Hermes instruction pack for Agentic Art Bare Minimum.
 - This folder is a markdown instruction pack, not a complete Hermes runtime by itself.
 - The existing repo scripts remain the supported setup path on ARM64 NVIDIA DGX Spark.
 - Hermes should use one local Ollama/Qwen model first for reasoning, coding, and vision.
-- GLM-5.2 is optional and paid, so it must be routed through a cost gate.
+- Codex is optional fallback for huge-context or IDE-grade coding work, so it must be routed through a permission gate.
 - The existing top-level `hermes/*.md` files are still the active backend instruction source unless the backend loader or sync step is changed.
 - Every repo should have its own repo-specific Hermes guide layered on top of the common Hermes guides.
 - The original `.opencode/agents` and `.opencode/skills` folders are source material only. They are not required at runtime by this pack because `COMMON_AGENTS.md` and `COMMON_SKILLS.md` now restate the roles and procedures directly.
@@ -25,7 +25,7 @@ This folder now contains the transferred OpenCode material as Hermes-readable eq
 - persistent state: `state/current-task.md`
 - plugin behavior: `plugins/graphify.md`
 - MCP setup guidance: `mcp/README.md`
-- model routing and GLM cost gate: `COMMON_MODEL_ROUTING.md`, `COMMON_GLM52_COST_GATE.md`
+- model routing and Codex fallback gate: `COMMON_MODEL_ROUTING.md`, `COMMON_CODEX_FALLBACK.md`
 - repo-specific Agentic Art flow/runtime/acceptance files: `REPO_AGENTIC_ART_*.md`
 
 It is not a binary Hermes runtime by itself. Hermes will obey it when one of these integration paths is used:
@@ -56,7 +56,7 @@ The current backend runtime reads the existing top-level `hermes/*.md` files fro
 6. `COMMON_TOOLS_MCPS.md`
 7. `COMMON_GRAPHIFY.md`
 8. `COMMON_LOGGING.md`
-9. `COMMON_GLM52_COST_GATE.md`
+9. `COMMON_CODEX_FALLBACK.md`
 10. `commands/*.md`
 11. `tools/*.md`
 12. `state/README.md`
@@ -75,13 +75,13 @@ Default local model:
 - reasoning/language/coding/vision: `HERMES_AGENT_MODEL` or `OLLAMA_REASONING_MODEL`
 - compatibility aliases: `HERMES_AGENT_CODER_MODEL`, `OLLAMA_CODER_MODEL`, `HERMES_AGENT_VISION_MODEL`, `OLLAMA_VISION_MODEL`
 
-Optional paid route:
+Optional fallback route:
 
-- GLM-5.2 via Z.ai OpenAI-compatible API for huge-context repository ingestion and project-wide debugging only.
+- Codex through the user's authenticated Codex CLI/app/subscription for huge-context repository ingestion, deep review, project-wide debugging, and IDE-grade coding tasks only.
 
-## Current Important Caveat
+## Graphify Note
 
-`opencode/graphify-out/` was generated for another repository. Keep the Graphify method, but do not treat that existing graph as truth for Agentic Art until Graphify is regenerated against this repo.
+No bundled Graphify output should be treated as current context. Regenerate a graph for this repo before using Graphify evidence.
 
 ## ARM64 NVIDIA DGX Spark Setup
 
@@ -205,30 +205,32 @@ HERMES_START_CLI=0 ./opencode/hermes_agent/install_and_start_hermes_cli.sh
 Initial Hermes instruction for this repo:
 
 ```text
-Read opencode/hermes_agent/README.md first. Then read the COMMON_*.md files, commands/*.md, tools/*.md, state/README.md, plugins/*.md, mcp/README.md, and the REPO_AGENTIC_ART_*.md files in the documented load order. Treat those as your Hermes orchestration guide for this repository. Use the local Qwen model first, keep project logs visible, and follow the Agentic Art repo-specific flow.
+Read opencode/hermes_agent/hermes_init.txt first. Then read opencode/hermes_agent/README.md, the COMMON_*.md files, commands/*.md, tools/*.md, state/README.md, plugins/*.md, mcp/README.md, and the REPO_AGENTIC_ART_*.md files in the documented load order. Treat those as your Hermes orchestration guide for this repository. Use the local Qwen model first, keep project logs visible, and follow the Agentic Art repo-specific flow.
 ```
 
-## GLM-5.2 Permission Rule
+## Codex Fallback Permission Rule
 
-Hermes must use the local Qwen model by default. GLM-5.2 is only for huge-context or project-wide reasoning.
+Hermes must use the local Qwen model by default. Codex is only for huge-context, project-wide, security-sensitive, or IDE-grade coding tasks after local context gathering is insufficient.
 
-Before the first GLM-5.2 use in a CLI session, Hermes must ask for permission:
+Before the first Codex fallback use in a CLI session, Hermes must ask for permission:
 
 ```text
-GLM-5.2 is paid. Allow GLM-5.2 for this request?
-Choices: allow once, allow always for this session, deny.
+Codex fallback may help because: <reason>.
+It may use your authenticated Codex account/subscription and inspect selected repo context.
+Allow Codex for this request?
+Choices: allow once, always allow for this category in this session, do not allow.
 ```
 
 - `allow once`: ask again next time.
 - `allow always for this session`: do not ask again until this Hermes CLI process exits.
 - after Hermes is closed and restarted, ask again.
-- never persist GLM approval to disk.
+- never persist Codex approval to disk.
 
 ## Per-Repo Hermes Pattern
 
 For every repository, keep the same split:
 
-- common reusable Hermes files: orchestration, model routing, logging, Graphify, MCPs, context protocol, cost gate
+- common reusable Hermes files: orchestration, model routing, logging, Graphify method, MCPs, context protocol, Codex fallback gate
 - repo-specific files: project purpose, runtime commands, ports, model defaults, artifact flow, acceptance checks, failure rules
 
 Hermes must always load the repo-specific guide after the common guide. Repo-specific rules override common rules when they conflict.
@@ -246,7 +248,7 @@ opencode/hermes_agent/
   COMMON_TOOLS_MCPS.md
   COMMON_GRAPHIFY.md
   COMMON_LOGGING.md
-  COMMON_GLM52_COST_GATE.md
+  COMMON_CODEX_FALLBACK.md
   REPO_<PROJECT_NAME>_FLOW.md
   REPO_<PROJECT_NAME>_RUNTIME.md
   REPO_<PROJECT_NAME>_ACCEPTANCE.md

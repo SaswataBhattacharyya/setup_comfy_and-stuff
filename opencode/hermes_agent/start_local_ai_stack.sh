@@ -126,11 +126,11 @@ Before doing any task:
 
 1. Read \`opencode/hermes_agent/README.md\`.
 2. Read all \`COMMON_*.md\` files in the README load order.
-3. Read \`commands/*.md\`, \`tools/*.md\`, \`state/README.md\`, \`plugins/*.md\`, and \`mcp/README.md\`.
+3. Read \`COMMON_CODEX_FALLBACK.md\`, \`commands/*.md\`, \`tools/*.md\`, \`state/README.md\`, \`plugins/*.md\`, and \`mcp/README.md\`.
 4. Read all \`REPO_AGENTIC_ART_*.md\` files in the README load order.
 5. Treat repo-specific files as higher priority than common files.
 6. Use \`$HERMES_MODEL\` as the unified local model for reasoning, coding, and vision.
-7. Use GLM-5.2 only for huge-context or project-wide reasoning after the GLM cost gate.
+7. Use Codex fallback only for huge-context or IDE-grade coding work after the Codex fallback gate.
 8. Keep background work visible through logs or explicit CLI status updates.
 9. Respect local-only service binding: ComfyUI on 127.0.0.1:3008 and Ollama on 127.0.0.1:11434.
 

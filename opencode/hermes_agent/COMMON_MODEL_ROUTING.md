@@ -1,6 +1,6 @@
 # Common Model Routing
 
-Hermes uses one local Qwen model by default and paid GLM-5.2 only for justified huge-context work.
+Hermes uses one local Qwen model by default and Codex only as a permission-gated fallback for justified huge-context or IDE-grade coding work.
 
 ## Unified Local Model
 
@@ -38,23 +38,23 @@ Default in this repo is expected to be `qwen3.6:35b` unless local config says ot
 
 Use the unified local model to synthesize search results. Use web/search tools only when current facts are needed, the user asks for latest information, or source attribution matters.
 
-## GLM-5.2 Optional Route
+## Codex Optional Route
 
-Use GLM-5.2 only when all are true:
+Use Codex only when all are true:
 
 - the task needs very large context or project-wide reasoning
 - local Qwen context compression is insufficient
-- the user has allowed paid model usage or configured the route for this class of task
-- the prompt has passed the cost gate in `COMMON_GLM52_COST_GATE.md`
+- the user has allowed Codex for this request or this session category
+- the prompt has passed the fallback gate in `COMMON_CODEX_FALLBACK.md`
 
-Good GLM-5.2 tasks:
+Good Codex fallback tasks:
 
 - read entire codebase architecture and answer a cross-cutting question
 - plan an IDE-like multi-file repair
 - diagnose an error that crosses frontend, backend, config, and tests
 - produce a migration/refactor plan from large repo context
 
-Poor GLM-5.2 tasks:
+Poor Codex fallback tasks:
 
 - simple code edits
 - small bugs with stack traces

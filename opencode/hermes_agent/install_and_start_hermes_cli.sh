@@ -247,9 +247,9 @@ Before doing any task:
    - unified/default: \`$HERMES_AGENT_MODEL\`
    - compatibility coder alias: \`$HERMES_AGENT_CODER_MODEL\`
    - compatibility vision alias: \`$HERMES_AGENT_VISION_MODEL\`
-7. Use GLM-5.2 only for huge-context or project-wide reasoning after the GLM cost gate.
-8. GLM permission is session-scoped:
-   - ask before first GLM use
+7. Use Codex fallback only for huge-context or IDE-grade coding work after the Codex fallback gate.
+8. Codex permission is session-scoped:
+   - ask before first Codex fallback use
    - "allow once" applies only to the current request
    - "allow always for this session" applies only until this CLI process exits
    - after CLI restart, ask again

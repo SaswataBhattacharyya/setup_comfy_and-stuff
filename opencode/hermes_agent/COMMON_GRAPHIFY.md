@@ -2,11 +2,9 @@
 
 Graphify is a repository knowledge graph. It is useful for architecture questions, dependency relationships, and impact analysis.
 
-## Important Agentic Art Warning
+## Current Graph Requirement
 
-The current `opencode/graphify-out/` content was generated for another repository. Do not use that graph as factual evidence for Agentic Art.
-
-Before relying on Graphify in this repo, regenerate or point Graphify at the current Agentic Art codebase.
+Do not rely on bundled or copied Graphify output. Use Graphify only after a graph has been generated for the current repository state, or treat Graphify as unavailable and inspect source files directly.
 
 ## Preferred Commands
 
@@ -28,7 +26,7 @@ For a concept explanation:
 graphify explain "<concept>"
 ```
 
-For broad reports, read `graphify-out/GRAPH_REPORT.md` only after query/path/explain are insufficient.
+For broad reports, use only a current report generated for this repository.
 
 ## When To Use
 
