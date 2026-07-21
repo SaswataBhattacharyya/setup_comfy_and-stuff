@@ -8,8 +8,8 @@ Upload the whole `comfy_setup/` folder to git, except ignored generated files.
 - `dgx_doctor.sh`: system/GPU/Python/Torch checker.
 - `links.md`: active manifest for custom nodes, models, and Krita AI plugin zip.
 - `workflows/`: JSON-only workflow copy from the source repo.
-- `vendor/TTS-Audio-Suite-local/`: local TTS overlay preserving custom timing/stitching/SRT/audio work.
-- `tts_overlay_include.txt`: exact selected TTS overlay paths.
+- `vendor/TTS-Audio-Suite-local/`: bundled local TTS-Audio-Suite copy preserving custom timing/stitching/SRT/audio work.
+- `tts_overlay_include.txt`: obsolete overlay reference kept only for traceability.
 - `docs/source_kritaai_novita.md`: original Krita AI notes.
 - `docs/source_links_original.md`: original source `links.md`.
 - `.gitignore`: prevents ComfyUI clone, models, downloaded zips, venvs, logs, and media outputs from being committed.

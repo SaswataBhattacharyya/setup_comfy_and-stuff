@@ -13,6 +13,9 @@ KRITA_AI_MODEL_ARGS="${KRITA_AI_MODEL_ARGS:---recommended --backend auto}"
 KRITA_AI_SKIP_MODEL_DOWNLOAD="${KRITA_AI_SKIP_MODEL_DOWNLOAD:-0}"
 DOWNLOAD_DIR="$ROOT_DIR/downloads"
 LOG_DIR="$ROOT_DIR/logs"
+TTS_AUDIO_SUITE_DIRNAME="TTS-Audio-Suite"
+TTS_AUDIO_SUITE_INSTALL_STAMP=".agentic_art_tts_audio_suite_installed"
+TTS_AUDIO_SUITE_OLD_LOCAL_MARKER=".agentic_art_local_tts_audio_suite"
 DEBIAN_FRONTEND=noninteractive
 APT_PREFIX=()
 
@@ -229,6 +232,13 @@ repo_dirname() {
   echo "$name"
 }
 
+is_tts_audio_suite_repo() {
+  local repo="$1"
+  local name
+  name="$(repo_dirname "$repo")"
+  [[ "$name" == "$TTS_AUDIO_SUITE_DIRNAME" ]]
+}
+
 install_custom_node_repo() {
   local repo="$1"
   local name
@@ -279,7 +289,12 @@ parse_links_manifest() {
     if [[ "$line" == wget\ * ]]; then
       download_file "$current_section" "${line#wget }"
     elif [[ "$line" == git\ clone\ * ]]; then
-      install_custom_node_repo "${line#git clone }"
+      repo="${line#git clone }"
+      if is_tts_audio_suite_repo "$repo"; then
+        log "[INFO] Skipping manifest TTS-Audio-Suite clone; bundled local copy is installed separately."
+      else
+        install_custom_node_repo "$repo"
+      fi
     fi
   done < "$LINKS_FILE"
 }
@@ -290,6 +305,7 @@ install_krita_ai_plugin_source() {
   local plugin_dir
   local source_dir
   local tmp_dir
+  local constraints_file
   zip_path="$DOWNLOAD_DIR/krita_ai_diffusion-${KRITA_AI_VERSION}.zip"
   plugin_root="$ROOT_DIR/krita-ai-diffusion"
   plugin_dir="$plugin_root/plugin-v${KRITA_AI_VERSION}"
@@ -326,8 +342,18 @@ install_krita_ai_plugin_source() {
     }
   fi
 
-  "$COMFY_PYTHON" -m pip install aiohttp tqdm "rembg[cpu]" "rembg[gpu]" accelerate gguf surrealist diffusers imageio-ffmpeg sageattention huggingface_hub || {
+  constraints_file="$LOG_DIR/shared_python_constraints.txt"
+  cat > "$constraints_file" <<'EOF_CONSTRAINTS'
+numpy>=2.1,<2.3
+transformers>=4.51.3,<=4.57.3
+EOF_CONSTRAINTS
+
+  "$COMFY_PYTHON" -m pip install -c "$constraints_file" aiohttp tqdm accelerate gguf surrealist diffusers imageio-ffmpeg sageattention huggingface_hub || {
     log "[WARN] One or more Krita/Comfy extra Python packages failed; inspect ARM64 compatibility."
+  }
+
+  "$COMFY_PYTHON" -m pip install -c "$constraints_file" "rembg[cpu]" "rembg[gpu]" || {
+    log "[WARN] rembg install failed under shared NumPy constraints; leaving NumPy/Transformers pinned for old TTS compatibility."
   }
 
   if [[ "$KRITA_AI_SKIP_MODEL_DOWNLOAD" == "1" ]]; then
@@ -341,44 +367,53 @@ install_krita_ai_plugin_source() {
   fi
 }
 
-install_tts_audio_suite_overlay() {
-  local target="$COMFYUI_DIR/custom_nodes/TTS-Audio-Suite"
-  local overlay="$ROOT_DIR/vendor/TTS-Audio-Suite-local"
-  if [[ ! -d "$target" ]]; then
-    install_custom_node_repo "https://github.com/diodiogod/TTS-Audio-Suite.git"
+install_local_tts_audio_suite() {
+  local target="$COMFYUI_DIR/custom_nodes/$TTS_AUDIO_SUITE_DIRNAME"
+  local source="$ROOT_DIR/vendor/TTS-Audio-Suite-local"
+  local backup
+
+  if [[ ! -d "$source" ]]; then
+    echo "[ERROR] Bundled local TTS-Audio-Suite is missing: $source" >&2
+    exit 1
   fi
+
+  if [[ -d "$target" && ! -f "$target/$TTS_AUDIO_SUITE_INSTALL_STAMP" && ! -f "$target/$TTS_AUDIO_SUITE_OLD_LOCAL_MARKER" ]]; then
+    backup="${target}.backup.$(date +%Y%m%d-%H%M%S)"
+    log "[WARN] Existing TTS-Audio-Suite is not the bundled local install; moving to $backup"
+    mv "$target" "$backup"
+  fi
+
+  mkdir -p "$COMFYUI_DIR/custom_nodes"
+  log "[INFO] Installing bundled local TTS-Audio-Suite into ComfyUI/custom_nodes"
+  rsync -a --delete \
+    --exclude='.git' \
+    --exclude='.codex' \
+    --exclude='__pycache__' \
+    --exclude='*.pyc' \
+    --exclude='.cache' \
+    --exclude='data/cache' \
+    --exclude='data/downloads' \
+    "$source/" "$target/"
+
   if [[ -f "$target/install.py" ]]; then
     (cd "$target" && "$COMFY_PYTHON" install.py) || {
       log "[WARN] TTS-Audio-Suite install.py failed; inspect ARM64 compatibility."
     }
   fi
-  if [[ -d "$overlay" ]]; then
-    mkdir -p "$target/.agentic_art_overlay_backup"
-    if [[ "${TTS_OVERLAY_MODE:-selected}" == "full" ]]; then
-      rsync -a \
-        --exclude='.git' \
-        --exclude='__pycache__' \
-        --exclude='*.pyc' \
-        --exclude='.cache' \
-        --exclude='data/cache' \
-        --exclude='data/downloads' \
-        "$overlay/" "$target/"
-    else
-      while IFS= read -r overlay_path || [[ -n "$overlay_path" ]]; do
-        overlay_path="${overlay_path#"${overlay_path%%[![:space:]]*}"}"
-        overlay_path="${overlay_path%"${overlay_path##*[![:space:]]}"}"
-        [[ -z "$overlay_path" || "$overlay_path" == \#* ]] && continue
-        if [[ -e "$overlay/$overlay_path" ]]; then
-          mkdir -p "$target/$(dirname "$overlay_path")"
-          cp -a "$overlay/$overlay_path" "$target/$overlay_path"
-        else
-          log "[WARN] TTS overlay path missing locally: $overlay_path"
-        fi
-      done < "$ROOT_DIR/tts_overlay_include.txt"
-    fi
-    date -Is > "$target/.agentic_art_overlay_applied"
-    log "[INFO] Applied local TTS-Audio-Suite overlay."
+
+  local step_audio_model_dir="$COMFYUI_DIR/models/TTS/step_audio_editx/Step-Audio-EditX"
+  if [[ -d "$step_audio_model_dir" ]]; then
+    log "[INFO] Step Audio EditX model already present."
+  elif [[ -f "$target/engines/step_audio_editx/step_audio_editx_downloader.py" ]]; then
+    log "[DOWNLOAD] Step Audio EditX model"
+    (cd "$target" && PYTHONPATH="$COMFYUI_DIR:$target${PYTHONPATH:+:$PYTHONPATH}" \
+      "$COMFY_PYTHON" -m engines.step_audio_editx.step_audio_editx_downloader Step-Audio-EditX) || {
+        log "[WARN] Step Audio EditX model download failed; rerun after checking network/model access."
+      }
   fi
+
+  printf 'installed\n' > "$target/$TTS_AUDIO_SUITE_INSTALL_STAMP"
+  rm -f "$target/$TTS_AUDIO_SUITE_OLD_LOCAL_MARKER"
 }
 
 copy_workflows() {
@@ -421,7 +456,7 @@ main() {
   mkdir -p "$COMFYUI_DIR/custom_nodes"
   parse_links_manifest
   install_krita_ai_plugin_source
-  install_tts_audio_suite_overlay
+  install_local_tts_audio_suite
   copy_workflows
   print_finish
 }

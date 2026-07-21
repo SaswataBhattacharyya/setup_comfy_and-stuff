@@ -246,4 +246,5 @@ git clone https://github.com/kijai/ComfyUI-segment-anything-2.git
 git clone https://github.com/un-seen/comfyui-tensorops.git
 git clone https://github.com/AHEKOT/ComfyUI_VNCCS_Utils.git
 git clone https://github.com/TTPlanetPig/Comfyui_TTP_Toolset.git
-git clone https://github.com/diodiogod/TTS-Audio-Suite.git
+# TTS-Audio-Suite is installed from vendor/TTS-Audio-Suite-local by bootstrap_dgx_comfy.sh.
+# git clone https://github.com/diodiogod/TTS-Audio-Suite.git

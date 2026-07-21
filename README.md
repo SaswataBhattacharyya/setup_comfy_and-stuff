@@ -8,7 +8,7 @@ This folder is a standalone ComfyUI/Krita AI/TTS setup kit. It is intentionally 
 - `dgx_doctor.sh`: hardware/runtime detector.
 - `links.md`: active install manifest for models, custom nodes, and Krita AI plugin.
 - `workflows/`: JSON-only copy of current workflows.
-- `vendor/TTS-Audio-Suite-local/`: local TTS-Audio-Suite overlay preserving the current custom additions.
+- `vendor/TTS-Audio-Suite-local/`: bundled local TTS-Audio-Suite copy preserving the current custom additions.
 - `docs/source_kritaai_novita.md`: original Krita install notes for traceability.
 - `docs/source_links_original.md`: original source `links.md`.
 
@@ -72,12 +72,8 @@ Keep the ComfyUI Python environment isolated. Do not copy Python packages from a
 
 ## TTS-Audio-Suite
 
-The bootstrap clones the latest upstream TTS-Audio-Suite into ComfyUI custom nodes, runs upstream install if possible, then overlays the local bundled TTS files from `vendor/TTS-Audio-Suite-local`.
+The bootstrap installs the bundled local TTS-Audio-Suite from `vendor/TTS-Audio-Suite-local` directly into `ComfyUI/custom_nodes/TTS-Audio-Suite`.
 
-This keeps upstream freshness while preserving your timing/stitching/SRT/audio work.
+It does not clone latest upstream TTS-Audio-Suite. This keeps the older dependency profile and preserves your timing/stitching/SRT/audio work.
 
-Default overlay mode is selected files from `tts_overlay_include.txt`. If something is missing, rerun with:
-
-```bash
-TTS_OVERLAY_MODE=full ./bootstrap_dgx_comfy.sh
-```
+If an existing `ComfyUI/custom_nodes/TTS-Audio-Suite` folder is present and was not installed by this bootstrap, it is moved to a timestamped backup before the bundled local copy is installed.

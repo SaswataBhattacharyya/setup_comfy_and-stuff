@@ -1,4 +1,10 @@
-# TTS-Audio-Suite overlay intent
+# OBSOLETE: TTS-Audio-Suite overlay intent
+#
+# bootstrap_dgx_comfy.sh no longer uses this file. The setup now installs the
+# full bundled local TTS-Audio-Suite from vendor/TTS-Audio-Suite-local directly
+# into ComfyUI/custom_nodes/TTS-Audio-Suite.
+#
+# The old overlay notes are kept below only for traceability.
 
 # The bootstrap clones latest upstream TTS-Audio-Suite first, then overlays this bundled local copy.
 
